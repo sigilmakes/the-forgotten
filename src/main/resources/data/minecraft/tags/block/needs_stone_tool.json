@@ -1,7 +1,6 @@
 {
   "replace": false,
   "values": [
-    "minecraft:reinforced_deepslate",
     "the-forgotten:palestone",
     "the-forgotten:polished_palestone",
     "the-forgotten:palestone_bricks"
