@@ -20,6 +20,9 @@ import net.minecraft.util.shape.VoxelShape;
 import net.minecraft.world.BlockView;
 import net.minecraft.world.TeleportTarget;
 import net.minecraft.world.World;
+import net.minecraft.world.block.WireOrientation;
+
+import org.jetbrains.annotations.Nullable;
 
 public class ForgottenPortalBlock extends Block {
 
@@ -112,7 +115,7 @@ public class ForgottenPortalBlock extends Block {
     }
 
     @Override
-    protected void neighborUpdate(BlockState state, World world, BlockPos pos, Block sourceBlock, BlockPos sourcePos, boolean notify) {
+    protected void neighborUpdate(BlockState state, World world, BlockPos pos, Block sourceBlock, @Nullable WireOrientation wireOrientation, boolean notify) {
         // Break the portal if the frame is no longer valid
         Direction.Axis axis = state.get(AXIS);
 
@@ -139,8 +142,5 @@ public class ForgottenPortalBlock extends Block {
         builder.add(AXIS);
     }
 
-    @Override
-    protected boolean isTransparent(BlockState state) {
-        return true;
-    }
+    // Block is registered as translucent via BlockRenderLayerMap in TheForgottenClient
 }
