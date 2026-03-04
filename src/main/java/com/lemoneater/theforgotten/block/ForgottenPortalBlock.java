@@ -8,6 +8,8 @@ import net.minecraft.block.ShapeContext;
 import net.minecraft.entity.Entity;
 import net.minecraft.particle.ParticleTypes;
 import net.minecraft.registry.RegistryKey;
+import net.minecraft.sound.SoundCategory;
+import net.minecraft.sound.SoundEvents;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.server.world.ServerWorld;
@@ -146,6 +148,16 @@ public class ForgottenPortalBlock extends Block {
 
     @Override
     public void randomDisplayTick(BlockState state, World world, BlockPos pos, Random random) {
+        // Ambient sound — low, eerie hum (rarer than nether portal)
+        if (random.nextInt(200) == 0) {
+            world.playSound(
+                    pos.getX() + 0.5, pos.getY() + 0.5, pos.getZ() + 0.5,
+                    SoundEvents.BLOCK_SCULK_CATALYST_BLOOM,
+                    SoundCategory.BLOCKS,
+                    0.3f, 0.4f + random.nextFloat() * 0.2f, false
+            );
+        }
+
         // Sparse pale particles drifting upward — dust motes in old light
         if (random.nextInt(3) == 0) {
             double x = pos.getX() + random.nextDouble();
