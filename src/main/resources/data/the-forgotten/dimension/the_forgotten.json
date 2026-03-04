@@ -1,29 +1,11 @@
 {
   "type": "the-forgotten:the_forgotten",
   "generator": {
-    "type": "minecraft:flat",
-    "settings": {
-      "layers": [
-        {
-          "block": "minecraft:bedrock",
-          "height": 1
-        },
-        {
-          "block": "the-forgotten:palestone",
-          "height": 58
-        },
-        {
-          "block": "the-forgotten:polished_palestone",
-          "height": 3
-        },
-        {
-          "block": "the-forgotten:palestone_bricks",
-          "height": 2
-        }
-      ],
-      "biome": "the-forgotten:forgotten_wastes",
-      "lakes": false,
-      "features": false
-    }
+    "type": "minecraft:noise",
+    "biome_source": {
+      "type": "minecraft:fixed",
+      "biome": "the-forgotten:forgotten_wastes"
+    },
+    "settings": "the-forgotten:the_forgotten"
   }
 }
