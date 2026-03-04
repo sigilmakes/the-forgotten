@@ -1,18 +1,19 @@
 {
-  "temperature": 0.5,
+  "temperature": 0.2,
   "downfall": 0.0,
   "has_precipitation": false,
   "effects": {
-    "sky_color": 1447446,
-    "fog_color": 1447446,
+    "sky_color": 1052688,
+    "fog_color": 1052688,
     "water_color": 4159204,
     "water_fog_color": 329011,
     "mood_sound": {
       "sound": "minecraft:ambient.cave",
-      "tick_delay": 6000,
+      "tick_delay": 4000,
       "block_search_extent": 8,
       "offset": 2.0
-    }
+    },
+    "ambient_sound": "minecraft:ambient.soul_sand_valley.loop"
   },
   "spawners": {
     "monster": [],
@@ -35,9 +36,9 @@
     [],
     [],
     [],
+    ["minecraft:sculk_vein", "minecraft:sculk_patch_deep_dark"],
     [],
-    [],
-    [],
+    ["minecraft:glow_lichen"],
     []
   ]
 }
