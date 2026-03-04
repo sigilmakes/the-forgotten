@@ -1,0 +1,6 @@
+{
+  "variants": {
+    "axis=x": { "model": "the-forgotten:block/forgotten_portal_ns" },
+    "axis=z": { "model": "the-forgotten:block/forgotten_portal_ew", "y": 90 }
+  }
+}
