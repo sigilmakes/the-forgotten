@@ -6,6 +6,7 @@ import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.ShapeContext;
 import net.minecraft.entity.Entity;
+import net.minecraft.particle.ParticleTypes;
 import net.minecraft.registry.RegistryKey;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.network.ServerPlayerEntity;
@@ -16,6 +17,7 @@ import net.minecraft.state.property.Properties;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Direction;
 import net.minecraft.util.math.Vec3d;
+import net.minecraft.util.math.random.Random;
 import net.minecraft.util.shape.VoxelShape;
 import net.minecraft.world.BlockView;
 import net.minecraft.world.TeleportTarget;
@@ -140,6 +142,45 @@ public class ForgottenPortalBlock extends Block {
     @Override
     protected void appendProperties(StateManager.Builder<Block, BlockState> builder) {
         builder.add(AXIS);
+    }
+
+    @Override
+    public void randomDisplayTick(BlockState state, World world, BlockPos pos, Random random) {
+        // Sparse pale particles drifting upward — dust motes in old light
+        if (random.nextInt(3) == 0) {
+            double x = pos.getX() + random.nextDouble();
+            double y = pos.getY() + random.nextDouble();
+            double z = pos.getZ() + random.nextDouble();
+
+            // Slow upward drift with slight horizontal wander
+            double vx = (random.nextDouble() - 0.5) * 0.02;
+            double vy = random.nextDouble() * 0.04 + 0.01;
+            double vz = (random.nextDouble() - 0.5) * 0.02;
+
+            // Sculk soul particles — pale blue-green, ethereal
+            world.addParticle(ParticleTypes.SCULK_SOUL, x, y, z, vx, vy, vz);
+        }
+
+        // Occasional enchant glyphs floating outward from the portal face
+        if (random.nextInt(8) == 0) {
+            Direction.Axis axis = state.get(AXIS);
+            double x = pos.getX() + random.nextDouble();
+            double y = pos.getY() + random.nextDouble();
+            double z = pos.getZ() + random.nextDouble();
+
+            double vx = (random.nextDouble() - 0.5) * 0.05;
+            double vy = random.nextDouble() * 0.02;
+            double vz = (random.nextDouble() - 0.5) * 0.05;
+
+            // Push particles outward from the portal face
+            if (axis == Direction.Axis.X) {
+                vz += (random.nextBoolean() ? 1 : -1) * 0.03;
+            } else {
+                vx += (random.nextBoolean() ? 1 : -1) * 0.03;
+            }
+
+            world.addParticle(ParticleTypes.ENCHANT, x, y, z, vx, vy, vz);
+        }
     }
 
     // Block is registered as translucent via BlockRenderLayerMap in TheForgottenClient
