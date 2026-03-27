@@ -1,5 +1,6 @@
 package com.lemoneater.theforgotten.block;
 
+import com.lemoneater.theforgotten.portal.PortalHelper;
 import com.lemoneater.theforgotten.world.ModDimensions;
 
 import net.minecraft.block.Block;
@@ -71,8 +72,22 @@ public class ForgottenPortalBlock extends Block {
         ServerWorld targetWorld = server.getWorld(targetKey);
         if (targetWorld == null) return;
 
-        // Find a safe position in the target dimension
-        BlockPos targetPos = findSafePosition(targetWorld, entity.getBlockPos());
+        // Get the axis of the portal we're standing in
+        Direction.Axis sourceAxis = state.get(AXIS);
+
+        // Try to find an existing portal in the target dimension
+        BlockPos targetPos;
+        BlockPos nearestPortal = PortalHelper.findNearestPortal(targetWorld, entity.getBlockPos());
+
+        if (nearestPortal != null) {
+            // Found an existing portal — land beside it
+            targetPos = PortalHelper.findPositionBesidePortal(targetWorld, nearestPortal);
+        } else {
+            // No existing portal — find safe ground and build one
+            BlockPos safePos = findSafePosition(targetWorld, entity.getBlockPos());
+            PortalHelper.buildPortalFrame(targetWorld, safePos, sourceAxis);
+            targetPos = PortalHelper.findPositionBesidePortal(targetWorld, safePos);
+        }
 
         // Players get the travel-through-portal packet for screen effects
         TeleportTarget.PostDimensionTransition postTransition =
