@@ -1,12 +1,12 @@
 {
   "variants": {
-    "axis=x,destination=forgotten": { "model": "the-forgotten:block/forgotten_portal_ns" },
-    "axis=z,destination=forgotten": { "model": "the-forgotten:block/forgotten_portal_ew", "y": 90 },
-    "axis=x,destination=overworld": { "model": "the-forgotten:block/forgotten_portal_overworld_ns" },
-    "axis=z,destination=overworld": { "model": "the-forgotten:block/forgotten_portal_overworld_ew", "y": 90 },
-    "axis=x,destination=nether": { "model": "the-forgotten:block/forgotten_portal_nether_ns" },
-    "axis=z,destination=nether": { "model": "the-forgotten:block/forgotten_portal_nether_ew", "y": 90 },
-    "axis=x,destination=end": { "model": "the-forgotten:block/forgotten_portal_end_ns" },
-    "axis=z,destination=end": { "model": "the-forgotten:block/forgotten_portal_end_ew", "y": 90 }
+    "axis=x,destination=forgotten": { "model": "the-forgotten:block/forgotten_portal_ew" },
+    "axis=z,destination=forgotten": { "model": "the-forgotten:block/forgotten_portal_ns" },
+    "axis=x,destination=overworld": { "model": "the-forgotten:block/forgotten_portal_overworld_ew" },
+    "axis=z,destination=overworld": { "model": "the-forgotten:block/forgotten_portal_overworld_ns" },
+    "axis=x,destination=nether": { "model": "the-forgotten:block/forgotten_portal_nether_ew" },
+    "axis=z,destination=nether": { "model": "the-forgotten:block/forgotten_portal_nether_ns" },
+    "axis=x,destination=end": { "model": "the-forgotten:block/forgotten_portal_end_ew" },
+    "axis=z,destination=end": { "model": "the-forgotten:block/forgotten_portal_end_ns" }
   }
 }

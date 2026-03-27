@@ -246,21 +246,32 @@ public class PortalHelper {
             }
         }
 
-        // Clear air beside the portal
+        // Ensure a solid platform under the entire frame + exits
         Direction[] exits = axis == Direction.Axis.X
                 ? new Direction[]{Direction.EAST, Direction.WEST}
                 : new Direction[]{Direction.NORTH, Direction.SOUTH};
 
+        // Platform under frame and exit areas
+        for (int w = -2; w <= width + 1; w++) {
+            BlockPos floorBase = bottomLeft.offset(widthDir, w).down();
+            if (world.getBlockState(floorBase).isAir()) {
+                world.setBlockState(floorBase, ModBlocks.PALESTONE.getDefaultState());
+            }
+            for (Direction dir : exits) {
+                BlockPos exitFloor = floorBase.offset(dir);
+                if (world.getBlockState(exitFloor).isAir()) {
+                    world.setBlockState(exitFloor, ModBlocks.PALESTONE.getDefaultState());
+                }
+            }
+        }
+
+        // Clear air beside the portal so entities can step out
         for (Direction dir : exits) {
             for (int h = 0; h < 2; h++) {
                 BlockPos exitPos = bottomLeft.offset(dir).up(h);
                 if (!world.getBlockState(exitPos).isAir()) {
                     world.setBlockState(exitPos, Blocks.AIR.getDefaultState());
                 }
-            }
-            BlockPos floorPos = bottomLeft.offset(dir).down();
-            if (world.getBlockState(floorPos).isAir()) {
-                world.setBlockState(floorPos, ModBlocks.PALESTONE.getDefaultState());
             }
         }
 
