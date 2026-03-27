@@ -1,10 +1,12 @@
 package com.lemoneater.theforgotten.portal;
 
-import com.lemoneater.theforgotten.block.ModBlocks;
 import com.lemoneater.theforgotten.block.ForgottenPortalBlock;
+import com.lemoneater.theforgotten.block.ForgottenPortalBlockEntity;
+import com.lemoneater.theforgotten.block.ModBlocks;
 
 import net.minecraft.block.BlockState;
 import net.minecraft.block.Blocks;
+import net.minecraft.registry.RegistryKey;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Direction;
@@ -176,10 +178,16 @@ public class PortalHelper {
         BlockState portalState = ModBlocks.FORGOTTEN_PORTAL.getDefaultState()
                 .with(ForgottenPortalBlock.AXIS, frame.axis);
 
+        // The origin dimension is wherever this portal is being lit
+        RegistryKey<World> originDimension = world.getRegistryKey();
+
         for (int h = 0; h < frame.height; h++) {
             for (int w = 0; w < frame.width; w++) {
                 BlockPos portalPos = frame.bottomLeft.offset(frame.widthDir, w).up(h);
                 world.setBlockState(portalPos, portalState);
+                if (world.getBlockEntity(portalPos) instanceof ForgottenPortalBlockEntity portalEntity) {
+                    portalEntity.setOriginDimension(originDimension);
+                }
             }
         }
     }
@@ -269,9 +277,10 @@ public class PortalHelper {
      * @param world The target world
      * @param bottomLeft Where the bottom-left interior block should be
      * @param axis The portal axis (X = frame extends in Z, Z = frame extends in X)
+     * @param originDimension The dimension this portal should link back to (stored in block entity)
      * @return The position of the bottom-left portal block (for teleporting beside it)
      */
-    public static BlockPos buildPortalFrame(ServerWorld world, BlockPos bottomLeft, Direction.Axis axis) {
+    public static BlockPos buildPortalFrame(ServerWorld world, BlockPos bottomLeft, Direction.Axis axis, RegistryKey<World> originDimension) {
         Direction widthDir = axis == Direction.Axis.X ? Direction.SOUTH : Direction.EAST;
         int width = 2;
         int height = 3;
@@ -311,10 +320,14 @@ public class PortalHelper {
             world.setBlockState(bottomLeft.offset(widthDir, width).up(h), frameBlock);
         }
 
-        // Fill portal interior
+        // Fill portal interior and set origin dimension on each block entity
         for (int h = 0; h < height; h++) {
             for (int w = 0; w < width; w++) {
-                world.setBlockState(bottomLeft.offset(widthDir, w).up(h), portalState);
+                BlockPos portalPos = bottomLeft.offset(widthDir, w).up(h);
+                world.setBlockState(portalPos, portalState);
+                if (originDimension != null && world.getBlockEntity(portalPos) instanceof ForgottenPortalBlockEntity portalEntity) {
+                    portalEntity.setOriginDimension(originDimension);
+                }
             }
         }
 

@@ -1,5 +1,6 @@
 package com.lemoneater.theforgotten;
 
+import com.lemoneater.theforgotten.block.ModBlockEntities;
 import com.lemoneater.theforgotten.block.ModBlocks;
 import com.lemoneater.theforgotten.portal.PortalHelper;
 
@@ -28,6 +29,7 @@ public class TheForgotten implements ModInitializer {
         LOGGER.info("Loading The Forgotten!");
 
         ModBlocks.initialize();
+        ModBlockEntities.initialize();
 
         registerPortalActivation();
     }

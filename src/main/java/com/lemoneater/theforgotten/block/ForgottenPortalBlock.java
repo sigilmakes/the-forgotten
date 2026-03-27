@@ -4,8 +4,10 @@ import com.lemoneater.theforgotten.portal.PortalHelper;
 import com.lemoneater.theforgotten.world.ModDimensions;
 
 import net.minecraft.block.Block;
+import net.minecraft.block.BlockEntityProvider;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.ShapeContext;
+import net.minecraft.block.entity.BlockEntity;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityCollisionHandler;
 import net.minecraft.particle.ParticleTypes;
@@ -30,7 +32,7 @@ import net.minecraft.world.block.WireOrientation;
 
 import org.jetbrains.annotations.Nullable;
 
-public class ForgottenPortalBlock extends Block {
+public class ForgottenPortalBlock extends Block implements BlockEntityProvider {
 
     public static final EnumProperty<Direction.Axis> AXIS = Properties.HORIZONTAL_AXIS;
 
@@ -40,6 +42,11 @@ public class ForgottenPortalBlock extends Block {
     public ForgottenPortalBlock(Settings settings) {
         super(settings);
         this.setDefaultState(this.stateManager.getDefaultState().with(AXIS, Direction.Axis.X));
+    }
+
+    @Override
+    public BlockEntity createBlockEntity(BlockPos pos, BlockState state) {
+        return new ForgottenPortalBlockEntity(pos, state);
     }
 
     @Override
@@ -65,8 +72,16 @@ public class ForgottenPortalBlock extends Block {
         // Determine target dimension
         RegistryKey<World> targetKey;
         if (world.getRegistryKey() == ModDimensions.THE_FORGOTTEN_WORLD) {
-            targetKey = World.OVERWORLD;
+            // In The Forgotten: read origin from portal block entity, go back there
+            targetKey = World.OVERWORLD; // default fallback
+            if (world.getBlockEntity(pos) instanceof ForgottenPortalBlockEntity portalEntity) {
+                RegistryKey<World> origin = portalEntity.getOriginDimension();
+                if (origin != null) {
+                    targetKey = origin;
+                }
+            }
         } else {
+            // In any other dimension: go to The Forgotten
             targetKey = ModDimensions.THE_FORGOTTEN_WORLD;
         }
 
@@ -85,8 +100,10 @@ public class ForgottenPortalBlock extends Block {
             targetPos = PortalHelper.findPositionBesidePortal(targetWorld, nearestPortal);
         } else {
             // No existing portal — find safe ground and build one
+            // The origin dimension is where we came FROM (so return portals know where to go)
+            RegistryKey<World> originForNewPortal = world.getRegistryKey();
             BlockPos safePos = findSafePosition(targetWorld, entity.getBlockPos());
-            PortalHelper.buildPortalFrame(targetWorld, safePos, sourceAxis);
+            PortalHelper.buildPortalFrame(targetWorld, safePos, sourceAxis, originForNewPortal);
             targetPos = PortalHelper.findPositionBesidePortal(targetWorld, safePos);
         }
 
