@@ -3,10 +3,12 @@
   "downfall": 0.0,
   "has_precipitation": false,
   "effects": {
-    "sky_color": 1052688,
-    "fog_color": 1052688,
+    "sky_color": 4210752,
+    "fog_color": 3355443,
     "water_color": 4159204,
     "water_fog_color": 329011,
+    "grass_color": 7832178,
+    "foliage_color": 8883574,
     "mood_sound": {
       "sound": "minecraft:ambient.cave",
       "tick_delay": 4000,
@@ -25,7 +27,11 @@
     "misc": []
   },
   "spawn_costs": {},
-  "carvers": [],
+  "carvers": [
+    "minecraft:cave",
+    "minecraft:cave_extra_underground",
+    "minecraft:canyon"
+  ],
   "features": [
     [],
     [],
@@ -36,7 +42,13 @@
     [],
     ["minecraft:sculk_vein", "minecraft:sculk_patch_deep_dark"],
     [],
-    ["minecraft:glow_lichen"],
+    [
+      "minecraft:glow_lichen",
+      "minecraft:pale_garden_vegetation",
+      "minecraft:pale_moss_patch",
+      "minecraft:pale_garden_flowers",
+      "minecraft:flower_pale_garden"
+    ],
     []
   ]
 }

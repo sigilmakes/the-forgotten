@@ -145,11 +145,11 @@ public class ForgottenPortalBlock extends Block {
     }
 
     /**
-     * Search a single column upward from y=24 to y=160 for a safe standing position.
+     * Search a single column upward for a safe standing position.
      * Returns the position to stand on (1 above the solid block), or null if none found.
      */
     private BlockPos searchColumnForSafeSpot(ServerWorld world, int x, int z) {
-        for (int y = 24; y <= 160; y++) {
+        for (int y = world.getBottomY() + 6; y <= world.getTopYInclusive() - 2; y++) {
             BlockPos floor = new BlockPos(x, y, z);
             BlockPos feet = floor.up();
             BlockPos head = floor.up(2);
