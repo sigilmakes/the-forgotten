@@ -1,8 +1,9 @@
 package com.lemoneater.theforgotten;
 
-import com.lemoneater.theforgotten.block.ModBlockEntities;
 import com.lemoneater.theforgotten.block.ModBlocks;
+import com.lemoneater.theforgotten.portal.PortalDestination;
 import com.lemoneater.theforgotten.portal.PortalHelper;
+import com.lemoneater.theforgotten.world.ModDimensions;
 
 import net.fabricmc.api.ModInitializer;
 import net.fabricmc.fabric.api.event.player.UseBlockCallback;
@@ -29,7 +30,6 @@ public class TheForgotten implements ModInitializer {
         LOGGER.info("Loading The Forgotten!");
 
         ModBlocks.initialize();
-        ModBlockEntities.initialize();
 
         registerPortalActivation();
     }
@@ -40,13 +40,7 @@ public class TheForgotten implements ModInitializer {
                 return ActionResult.PASS;
             }
 
-            // Must be using main hand with an echo shard
             if (hand != Hand.MAIN_HAND) {
-                return ActionResult.PASS;
-            }
-
-            ItemStack heldItem = player.getStackInHand(hand);
-            if (!heldItem.isOf(Items.ECHO_SHARD)) {
                 return ActionResult.PASS;
             }
 
@@ -56,17 +50,29 @@ public class TheForgotten implements ModInitializer {
                 return ActionResult.PASS;
             }
 
+            ItemStack heldItem = player.getStackInHand(hand);
+
+            // Determine portal destination based on item + current dimension
+            PortalDestination destination = getActivationDestination(world, heldItem);
+            if (destination == null) {
+                return ActionResult.PASS;
+            }
+
             // Get the interior position (block adjacent to the clicked face)
             BlockPos interiorPos = clickedPos.offset(hitResult.getSide());
 
             // Try to light the portal
-            if (PortalHelper.tryLightPortal(world, interiorPos)) {
-                // Consume the echo shard (unless creative mode)
+            if (PortalHelper.tryLightPortal(world, interiorPos, destination)) {
+                // Consume or damage the activation item (unless creative)
                 if (!player.isCreative()) {
-                    heldItem.decrement(1);
+                    if (heldItem.isOf(Items.FLINT_AND_STEEL)) {
+                        heldItem.damage(1, player);
+                    } else {
+                        heldItem.decrement(1);
+                    }
                 }
 
-                // Play a dramatic sound
+                // Play activation sound
                 world.playSound(null, clickedPos,
                         SoundEvents.BLOCK_END_PORTAL_SPAWN,
                         SoundCategory.BLOCKS,
@@ -77,5 +83,28 @@ public class TheForgotten implements ModInitializer {
 
             return ActionResult.PASS;
         });
+    }
+
+    /**
+     * Determine portal destination based on current dimension and held item.
+     *
+     * Outside The Forgotten: echo shard → FORGOTTEN
+     * Inside The Forgotten:
+     *   echo shard → OVERWORLD
+     *   flint & steel → NETHER
+     *   eye of ender → END
+     */
+    private PortalDestination getActivationDestination(net.minecraft.world.World world, ItemStack heldItem) {
+        boolean inForgotten = world.getRegistryKey() == ModDimensions.THE_FORGOTTEN_WORLD;
+
+        if (inForgotten) {
+            if (heldItem.isOf(Items.ECHO_SHARD)) return PortalDestination.OVERWORLD;
+            if (heldItem.isOf(Items.FLINT_AND_STEEL)) return PortalDestination.NETHER;
+            if (heldItem.isOf(Items.ENDER_EYE)) return PortalDestination.END;
+        } else {
+            if (heldItem.isOf(Items.ECHO_SHARD)) return PortalDestination.FORGOTTEN;
+        }
+
+        return null;
     }
 }

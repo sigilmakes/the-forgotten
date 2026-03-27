@@ -1,13 +1,12 @@
 package com.lemoneater.theforgotten.block;
 
+import com.lemoneater.theforgotten.portal.PortalDestination;
 import com.lemoneater.theforgotten.portal.PortalHelper;
 import com.lemoneater.theforgotten.world.ModDimensions;
 
 import net.minecraft.block.Block;
-import net.minecraft.block.BlockEntityProvider;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.ShapeContext;
-import net.minecraft.block.entity.BlockEntity;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityCollisionHandler;
 import net.minecraft.particle.ParticleTypes;
@@ -28,36 +27,32 @@ import net.minecraft.util.shape.VoxelShape;
 import net.minecraft.world.BlockView;
 import net.minecraft.world.TeleportTarget;
 import net.minecraft.world.World;
+import net.minecraft.world.dimension.DimensionType;
 import net.minecraft.world.block.WireOrientation;
 
 import org.jetbrains.annotations.Nullable;
 
-public class ForgottenPortalBlock extends Block implements BlockEntityProvider {
+public class ForgottenPortalBlock extends Block {
 
     public static final EnumProperty<Direction.Axis> AXIS = Properties.HORIZONTAL_AXIS;
+    public static final EnumProperty<PortalDestination> DESTINATION = EnumProperty.of("destination", PortalDestination.class);
 
     protected static final VoxelShape X_SHAPE = Block.createCuboidShape(0, 0, 6, 16, 16, 10);
     protected static final VoxelShape Z_SHAPE = Block.createCuboidShape(6, 0, 0, 10, 16, 16);
 
     public ForgottenPortalBlock(Settings settings) {
         super(settings);
-        this.setDefaultState(this.stateManager.getDefaultState().with(AXIS, Direction.Axis.X));
-    }
-
-    @Override
-    public BlockEntity createBlockEntity(BlockPos pos, BlockState state) {
-        return new ForgottenPortalBlockEntity(pos, state);
+        this.setDefaultState(this.stateManager.getDefaultState()
+                .with(AXIS, Direction.Axis.X)
+                .with(DESTINATION, PortalDestination.FORGOTTEN));
     }
 
     @Override
     protected VoxelShape getOutlineShape(BlockState state, BlockView world, BlockPos pos, ShapeContext context) {
-        switch (state.get(AXIS)) {
-            case Z:
-                return Z_SHAPE;
-            case X:
-            default:
-                return X_SHAPE;
-        }
+        return switch (state.get(AXIS)) {
+            case Z -> Z_SHAPE;
+            default -> X_SHAPE;
+        };
     }
 
     @Override
@@ -69,41 +64,36 @@ public class ForgottenPortalBlock extends Block implements BlockEntityProvider {
         if (!(world instanceof ServerWorld serverWorld)) return;
         MinecraftServer server = serverWorld.getServer();
 
-        // Determine target dimension
-        RegistryKey<World> targetKey;
-        if (world.getRegistryKey() == ModDimensions.THE_FORGOTTEN_WORLD) {
-            // In The Forgotten: read origin from portal block entity, go back there
-            targetKey = World.OVERWORLD; // default fallback
-            if (world.getBlockEntity(pos) instanceof ForgottenPortalBlockEntity portalEntity) {
-                RegistryKey<World> origin = portalEntity.getOriginDimension();
-                if (origin != null) {
-                    targetKey = origin;
-                }
-            }
-        } else {
-            // In any other dimension: go to The Forgotten
-            targetKey = ModDimensions.THE_FORGOTTEN_WORLD;
-        }
+        PortalDestination destination = state.get(DESTINATION);
+        RegistryKey<World> targetKey = destination.getTargetDimension();
 
         ServerWorld targetWorld = server.getWorld(targetKey);
         if (targetWorld == null) return;
 
+        // Apply coordinate scaling for portal search position
+        double scale = DimensionType.getCoordinateScaleFactor(
+                serverWorld.getDimension(), targetWorld.getDimension());
+        int targetX = (int) (entity.getX() * scale);
+        int targetZ = (int) (entity.getZ() * scale);
+        BlockPos searchPos = new BlockPos(targetX, entity.getBlockY(), targetZ);
+
+        // Determine what destination the return portal should have
+        PortalDestination returnDestination = PortalDestination.getReturnDestination(world.getRegistryKey());
+
         // Get the axis of the portal we're standing in
         Direction.Axis sourceAxis = state.get(AXIS);
 
-        // Try to find an existing portal in the target dimension
+        // Search for an existing portal with matching destination in the target dimension
         BlockPos targetPos;
-        BlockPos nearestPortal = PortalHelper.findNearestPortal(targetWorld, entity.getBlockPos());
+        BlockPos nearestPortal = PortalHelper.findNearestPortal(targetWorld, searchPos, returnDestination);
 
         if (nearestPortal != null) {
-            // Found an existing portal — land beside it
+            // Found an existing return portal — land beside it
             targetPos = PortalHelper.findPositionBesidePortal(targetWorld, nearestPortal);
         } else {
             // No existing portal — find safe ground and build one
-            // The origin dimension is where we came FROM (so return portals know where to go)
-            RegistryKey<World> originForNewPortal = world.getRegistryKey();
-            BlockPos safePos = findSafePosition(targetWorld, entity.getBlockPos());
-            PortalHelper.buildPortalFrame(targetWorld, safePos, sourceAxis, originForNewPortal);
+            BlockPos safePos = findSafePosition(targetWorld, searchPos);
+            PortalHelper.buildPortalFrame(targetWorld, safePos, sourceAxis, returnDestination);
             targetPos = PortalHelper.findPositionBesidePortal(targetWorld, safePos);
         }
 
@@ -130,9 +120,6 @@ public class ForgottenPortalBlock extends Block implements BlockEntityProvider {
         int x = sourcePos.getX();
         int z = sourcePos.getZ();
 
-        // Search upward from the cavern floor to find standing room inside the caves.
-        // The dimension is 0-192 with bedrock at 0-5 and 187-192. Caverns live ~y24-160.
-        // Look for: solid block with 2 air blocks above (room to stand).
         BlockPos result = searchColumnForSafeSpot(world, x, z);
         if (result != null) return result;
 
@@ -140,7 +127,7 @@ public class ForgottenPortalBlock extends Block implements BlockEntityProvider {
         for (int radius = 1; radius <= 8; radius++) {
             for (int dx = -radius; dx <= radius; dx++) {
                 for (int dz = -radius; dz <= radius; dz++) {
-                    if (Math.abs(dx) != radius && Math.abs(dz) != radius) continue; // only perimeter
+                    if (Math.abs(dx) != radius && Math.abs(dz) != radius) continue;
                     result = searchColumnForSafeSpot(world, x + dx, z + dz);
                     if (result != null) return result;
                 }
@@ -154,17 +141,12 @@ public class ForgottenPortalBlock extends Block implements BlockEntityProvider {
                 world.setBlockState(platformPos.add(dx, 0, dz), ModBlocks.PALESTONE.getDefaultState());
             }
         }
-        // Clear 2 blocks of air above the platform
         for (int dy = 1; dy <= 2; dy++) {
             world.setBlockState(platformPos.up(dy), net.minecraft.block.Blocks.AIR.getDefaultState());
         }
         return platformPos.up();
     }
 
-    /**
-     * Search a single column upward for a safe standing position.
-     * Returns the position to stand on (1 above the solid block), or null if none found.
-     */
     private BlockPos searchColumnForSafeSpot(ServerWorld world, int x, int z) {
         for (int y = world.getBottomY() + 6; y <= world.getTopYInclusive() - 2; y++) {
             BlockPos floor = new BlockPos(x, y, z);
@@ -182,11 +164,8 @@ public class ForgottenPortalBlock extends Block implements BlockEntityProvider {
 
     @Override
     protected void neighborUpdate(BlockState state, World world, BlockPos pos, Block sourceBlock, @Nullable WireOrientation wireOrientation, boolean notify) {
-        // Break the portal if the frame is no longer valid
         Direction.Axis axis = state.get(AXIS);
 
-        // Simple check: if any adjacent frame position is no longer reinforced deepslate
-        // and not another portal block, break this portal block
         boolean hasVerticalSupport = isFrameOrPortal(world, pos.up()) || isFrameOrPortal(world, pos.down());
         boolean hasHorizontalSupport = axis == Direction.Axis.X
                 ? isFrameOrPortal(world, pos.north()) || isFrameOrPortal(world, pos.south())
@@ -205,12 +184,12 @@ public class ForgottenPortalBlock extends Block implements BlockEntityProvider {
 
     @Override
     protected void appendProperties(StateManager.Builder<Block, BlockState> builder) {
-        builder.add(AXIS);
+        builder.add(AXIS, DESTINATION);
     }
 
     @Override
     public void randomDisplayTick(BlockState state, World world, BlockPos pos, Random random) {
-        // Ambient sound — low, eerie hum (rarer than nether portal)
+        // Ambient sound — rare sculk catalyst bloom
         if (random.nextInt(200) == 0) {
             world.playSoundAtBlockCenterClient(
                     pos,
@@ -220,22 +199,20 @@ public class ForgottenPortalBlock extends Block implements BlockEntityProvider {
             );
         }
 
-        // Sparse pale particles drifting upward — dust motes in old light
+        // Sculk soul particles
         if (random.nextInt(3) == 0) {
             double x = pos.getX() + random.nextDouble();
             double y = pos.getY() + random.nextDouble();
             double z = pos.getZ() + random.nextDouble();
 
-            // Slow upward drift with slight horizontal wander
             double vx = (random.nextDouble() - 0.5) * 0.02;
             double vy = random.nextDouble() * 0.04 + 0.01;
             double vz = (random.nextDouble() - 0.5) * 0.02;
 
-            // Sculk soul particles — pale blue-green, ethereal
             world.addParticleClient(ParticleTypes.SCULK_SOUL, x, y, z, vx, vy, vz);
         }
 
-        // Occasional enchant glyphs floating outward from the portal face
+        // Enchant glyphs
         if (random.nextInt(8) == 0) {
             Direction.Axis axis = state.get(AXIS);
             double x = pos.getX() + random.nextDouble();
@@ -246,7 +223,6 @@ public class ForgottenPortalBlock extends Block implements BlockEntityProvider {
             double vy = random.nextDouble() * 0.02;
             double vz = (random.nextDouble() - 0.5) * 0.05;
 
-            // Push particles outward from the portal face
             if (axis == Direction.Axis.X) {
                 vz += (random.nextBoolean() ? 1 : -1) * 0.03;
             } else {
@@ -256,6 +232,4 @@ public class ForgottenPortalBlock extends Block implements BlockEntityProvider {
             world.addParticleClient(ParticleTypes.ENCHANT, x, y, z, vx, vy, vz);
         }
     }
-
-    // Block is registered as translucent via BlockRenderLayerMap in TheForgottenClient
 }
