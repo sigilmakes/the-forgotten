@@ -57,11 +57,7 @@ public class ForgottenPortalBlock extends Block {
             return;
         }
 
-        if (!(entity instanceof ServerPlayerEntity player)) {
-            return;
-        }
-
-        MinecraftServer server = player.getServer();
+        MinecraftServer server = entity.getServer();
         if (server == null) return;
 
         // Determine target dimension
@@ -76,19 +72,25 @@ public class ForgottenPortalBlock extends Block {
         if (targetWorld == null) return;
 
         // Find a safe position in the target dimension
-        BlockPos targetPos = findSafePosition(targetWorld, player.getBlockPos());
+        BlockPos targetPos = findSafePosition(targetWorld, entity.getBlockPos());
 
-        player.teleportTo(new TeleportTarget(
+        // Players get the travel-through-portal packet for screen effects
+        TeleportTarget.PostDimensionTransition postTransition =
+                entity instanceof ServerPlayerEntity
+                        ? TeleportTarget.SEND_TRAVEL_THROUGH_PORTAL_PACKET
+                        : TeleportTarget.NO_OP;
+
+        entity.teleportTo(new TeleportTarget(
                 targetWorld,
                 Vec3d.ofBottomCenter(targetPos),
                 Vec3d.ZERO,
-                player.getYaw(),
-                player.getPitch(),
-                TeleportTarget.SEND_TRAVEL_THROUGH_PORTAL_PACKET
+                entity.getYaw(),
+                entity.getPitch(),
+                postTransition
         ));
 
         // Cooldown prevents immediate re-teleport (80 ticks = 4 seconds)
-        player.setPortalCooldown(80);
+        entity.setPortalCooldown(80);
     }
 
     private BlockPos findSafePosition(ServerWorld world, BlockPos sourcePos) {
