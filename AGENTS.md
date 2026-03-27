@@ -21,11 +21,10 @@ src/main/java/com/lemoneater/theforgotten/
 ├── TheForgottenDataGenerator.java  # Data generation entrypoint
 ├── block/
 │   ├── ModBlocks.java          # Block definitions (palestone family + portal)
-│   ├── ModBlockEntities.java   # Block entity type registration
-│   ├── ForgottenPortalBlock.java  # Portal block — collision teleport, particles, sounds, frame validation
-│   └── ForgottenPortalBlockEntity.java  # Stores origin dimension for portal routing
+│   └── ForgottenPortalBlock.java  # Portal block — destination-typed teleport, particles, sounds, frame validation
 ├── portal/
-│   └── PortalHelper.java       # Frame detection — finds rectangular reinforced deepslate frames, fills with portal
+│   ├── PortalDestination.java  # Enum: FORGOTTEN, OVERWORLD, NETHER, END — destination types with color/dimension mapping
+│   └── PortalHelper.java       # Frame detection, destination-filtered portal search, auto-frame building
 ├── world/
 │   └── ModDimensions.java      # Dimension registry key
 └── mixin/
@@ -53,9 +52,10 @@ src/main/resources/
 ## Key Patterns
 
 - **Block registration:** Use `ModBlocks.register()` helper — takes name, factory, settings, and whether to create a BlockItem.
-- **Portal activation:** `UseBlockCallback` event in `TheForgotten.java` → `PortalHelper.tryLightPortal()` → fills frame with portal blocks.
-- **Teleportation:** `ForgottenPortalBlock.onEntityCollision()` → reads origin from block entity → `TeleportTarget` API. All entities supported.
-- **Portal routing:** Per-portal block entity tracks origin dimension. Portals in The Forgotten send you back to the dimension they were built from. Portals in any other dimension go to The Forgotten.
+- **Portal activation:** `UseBlockCallback` in `TheForgotten.java` checks item + dimension → `PortalHelper.tryLightPortal(world, pos, destination)`. Echo shard outside = FORGOTTEN, echo shard inside = OVERWORLD, flint & steel inside = NETHER, eye of ender inside = END.
+- **Teleportation:** `ForgottenPortalBlock.onEntityCollision()` reads `DESTINATION` property → applies coordinate scaling → searches target dimension for matching portal → teleports.
+- **Portal routing:** Destination is a block state property (`PortalDestination` enum), not a block entity. Color = destination: pale/blue → Forgotten, green → Overworld, red → Nether, purple → End.
+- **Coordinate scaling:** `coordinate_scale: 8.0`. The Forgotten is fast travel for the End. Nether ↔ Forgotten is 1:1.
 - **Frame detection:** `PortalHelper.detectFrame()` walks outward from an interior position to find the rectangular frame. Validates all edges and corners.
 - **Mixin:** `BlocksMixin` uses `@Redirect` on `Blocks.<clinit>` to change reinforced deepslate properties (makes it mineable with diamond tools).
 
@@ -75,6 +75,6 @@ Uses a nix flake for JDK 21. Run `nix develop` to enter the shell, then `./gradl
 ## Notes
 
 - Portal search (`findNearestPortal`) does a 128-block radius brute-force scan. Fine for now but could be expensive if called frequently in loaded chunks. If it becomes a problem, consider a POI-based approach or caching portal locations.
-- The dimension uses `coordinate_scale: 1.0` — no nether-style 8:1 coordinate mapping. Portals map 1:1 between all dimensions and The Forgotten.
+- The dimension uses `coordinate_scale: 8.0` — same as the Nether. The Forgotten is fast travel for the End. Nether ↔ Forgotten is 1:1.
 - Worldgen uses the overworld noise router for natural terrain + caves, with palestone as the default block. Surface is pale moss with pale oak forest.
 - The sky uses the End skybox (`skybox: "end"`) with grey fog/sky colors for a grainy void look.
