@@ -95,27 +95,54 @@ public class ForgottenPortalBlock extends Block {
         int x = sourcePos.getX();
         int z = sourcePos.getZ();
 
-        // Search downward from build height for a solid block
-        for (int y = world.getTopYInclusive(); y >= world.getBottomY(); y--) {
-            BlockPos checkPos = new BlockPos(x, y, z);
-            BlockPos abovePos = checkPos.up();
-            BlockPos above2Pos = checkPos.up(2);
+        // Search upward from the cavern floor to find standing room inside the caves.
+        // The dimension is 0-192 with bedrock at 0-5 and 187-192. Caverns live ~y24-160.
+        // Look for: solid block with 2 air blocks above (room to stand).
+        BlockPos result = searchColumnForSafeSpot(world, x, z);
+        if (result != null) return result;
 
-            if (!world.getBlockState(checkPos).isAir()
-                    && world.getBlockState(abovePos).isAir()
-                    && world.getBlockState(above2Pos).isAir()) {
-                return abovePos;
+        // If the exact column is solid, try nearby offsets in a spiral
+        for (int radius = 1; radius <= 8; radius++) {
+            for (int dx = -radius; dx <= radius; dx++) {
+                for (int dz = -radius; dz <= radius; dz++) {
+                    if (Math.abs(dx) != radius && Math.abs(dz) != radius) continue; // only perimeter
+                    result = searchColumnForSafeSpot(world, x + dx, z + dz);
+                    if (result != null) return result;
+                }
             }
         }
 
-        // No safe spot found — create a small palestone platform
+        // Last resort — create a small palestone platform at y=64
         BlockPos platformPos = new BlockPos(x, 64, z);
         for (int dx = -1; dx <= 1; dx++) {
             for (int dz = -1; dz <= 1; dz++) {
                 world.setBlockState(platformPos.add(dx, 0, dz), ModBlocks.PALESTONE.getDefaultState());
             }
         }
+        // Clear 2 blocks of air above the platform
+        for (int dy = 1; dy <= 2; dy++) {
+            world.setBlockState(platformPos.up(dy), net.minecraft.block.Blocks.AIR.getDefaultState());
+        }
         return platformPos.up();
+    }
+
+    /**
+     * Search a single column upward from y=24 to y=160 for a safe standing position.
+     * Returns the position to stand on (1 above the solid block), or null if none found.
+     */
+    private BlockPos searchColumnForSafeSpot(ServerWorld world, int x, int z) {
+        for (int y = 24; y <= 160; y++) {
+            BlockPos floor = new BlockPos(x, y, z);
+            BlockPos feet = floor.up();
+            BlockPos head = floor.up(2);
+
+            if (!world.getBlockState(floor).isAir()
+                    && world.getBlockState(feet).isAir()
+                    && world.getBlockState(head).isAir()) {
+                return feet;
+            }
+        }
+        return null;
     }
 
     @Override
