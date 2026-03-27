@@ -7,6 +7,7 @@ import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.ShapeContext;
 import net.minecraft.entity.Entity;
+import net.minecraft.entity.EntityCollisionHandler;
 import net.minecraft.particle.ParticleTypes;
 import net.minecraft.registry.RegistryKey;
 import net.minecraft.sound.SoundCategory;
@@ -53,13 +54,13 @@ public class ForgottenPortalBlock extends Block {
     }
 
     @Override
-    protected void onEntityCollision(BlockState state, World world, BlockPos pos, Entity entity) {
+    protected void onEntityCollision(BlockState state, World world, BlockPos pos, Entity entity, EntityCollisionHandler collisionHandler, boolean piercingMovement) {
         if (world.isClient() || entity.hasPortalCooldown()) {
             return;
         }
 
-        MinecraftServer server = entity.getServer();
-        if (server == null) return;
+        if (!(world instanceof ServerWorld serverWorld)) return;
+        MinecraftServer server = serverWorld.getServer();
 
         // Determine target dimension
         RegistryKey<World> targetKey;
@@ -194,8 +195,8 @@ public class ForgottenPortalBlock extends Block {
     public void randomDisplayTick(BlockState state, World world, BlockPos pos, Random random) {
         // Ambient sound — low, eerie hum (rarer than nether portal)
         if (random.nextInt(200) == 0) {
-            world.playSound(
-                    pos.getX() + 0.5, pos.getY() + 0.5, pos.getZ() + 0.5,
+            world.playSoundAtBlockCenterClient(
+                    pos,
                     SoundEvents.BLOCK_SCULK_CATALYST_BLOOM,
                     SoundCategory.BLOCKS,
                     0.3f, 0.4f + random.nextFloat() * 0.2f, false
@@ -214,7 +215,7 @@ public class ForgottenPortalBlock extends Block {
             double vz = (random.nextDouble() - 0.5) * 0.02;
 
             // Sculk soul particles — pale blue-green, ethereal
-            world.addParticle(ParticleTypes.SCULK_SOUL, x, y, z, vx, vy, vz);
+            world.addParticleClient(ParticleTypes.SCULK_SOUL, x, y, z, vx, vy, vz);
         }
 
         // Occasional enchant glyphs floating outward from the portal face
@@ -235,7 +236,7 @@ public class ForgottenPortalBlock extends Block {
                 vx += (random.nextBoolean() ? 1 : -1) * 0.03;
             }
 
-            world.addParticle(ParticleTypes.ENCHANT, x, y, z, vx, vy, vz);
+            world.addParticleClient(ParticleTypes.ENCHANT, x, y, z, vx, vy, vz);
         }
     }
 

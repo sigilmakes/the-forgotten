@@ -28,8 +28,8 @@
         "the-forgotten.mixins.json"
     ],
     "depends": {
-        "fabricloader": ">=0.16.10",
-        "minecraft": "~1.21.4",
+        "fabricloader": ">=0.18.5",
+        "minecraft": "~1.21.11",
         "java": ">=21",
         "fabric-api": "*"
     }
