@@ -1,6 +1,6 @@
 # The Forgotten — Project Instructions
 
-Minecraft Fabric mod (1.21.4, Java 21). A dimension hidden beneath the ancient cities, accessed through reinforced deepslate portal frames activated with echo shards.
+Minecraft Fabric mod (1.21.11, Java 21). A dimension hidden beneath the ancient cities, accessed through reinforced deepslate portal frames activated with echo shards.
 
 ## Build & Test
 
@@ -21,7 +21,9 @@ src/main/java/com/lemoneater/theforgotten/
 ├── TheForgottenDataGenerator.java  # Data generation entrypoint
 ├── block/
 │   ├── ModBlocks.java          # Block definitions (palestone family + portal)
-│   └── ForgottenPortalBlock.java  # Portal block — collision teleport, particles, sounds, frame validation
+│   ├── ModBlockEntities.java   # Block entity type registration
+│   ├── ForgottenPortalBlock.java  # Portal block — collision teleport, particles, sounds, frame validation
+│   └── ForgottenPortalBlockEntity.java  # Stores origin dimension for portal routing
 ├── portal/
 │   └── PortalHelper.java       # Frame detection — finds rectangular reinforced deepslate frames, fills with portal
 ├── world/
@@ -52,7 +54,8 @@ src/main/resources/
 
 - **Block registration:** Use `ModBlocks.register()` helper — takes name, factory, settings, and whether to create a BlockItem.
 - **Portal activation:** `UseBlockCallback` event in `TheForgotten.java` → `PortalHelper.tryLightPortal()` → fills frame with portal blocks.
-- **Teleportation:** `ForgottenPortalBlock.onEntityCollision()` → `TeleportTarget` API. Currently player-only (`instanceof ServerPlayerEntity` check).
+- **Teleportation:** `ForgottenPortalBlock.onEntityCollision()` → reads origin from block entity → `TeleportTarget` API. All entities supported.
+- **Portal routing:** Per-portal block entity tracks origin dimension. Portals in The Forgotten send you back to the dimension they were built from. Portals in any other dimension go to The Forgotten.
 - **Frame detection:** `PortalHelper.detectFrame()` walks outward from an interior position to find the rectangular frame. Validates all edges and corners.
 - **Mixin:** `BlocksMixin` uses `@Redirect` on `Blocks.<clinit>` to change reinforced deepslate properties (makes it mineable with diamond tools).
 
@@ -65,8 +68,13 @@ src/main/resources/
 - **Branches:** `feature/<name>` for new features, merge to `main`
 - **Indentation:** 4 spaces
 
+## Dev Environment
+
+Uses a nix flake for JDK 21. Run `nix develop` to enter the shell, then `./gradlew build`.
+
 ## Notes
 
 - Portal search (`findNearestPortal`) does a 128-block radius brute-force scan. Fine for now but could be expensive if called frequently in loaded chunks. If it becomes a problem, consider a POI-based approach or caching portal locations.
-- The dimension uses `coordinate_scale: 1.0` — no nether-style 8:1 coordinate mapping. Portals map 1:1 between overworld and The Forgotten.
-- `findSafePosition()` searches upward from y=24 through the cavern range. The noise settings create caverns between roughly y=24 and y=160.
+- The dimension uses `coordinate_scale: 1.0` — no nether-style 8:1 coordinate mapping. Portals map 1:1 between all dimensions and The Forgotten.
+- Worldgen uses the overworld noise router for natural terrain + caves, with palestone as the default block. Surface is pale moss with pale oak forest.
+- The sky uses the End skybox (`skybox: "end"`) with grey fog/sky colors for a grainy void look.
