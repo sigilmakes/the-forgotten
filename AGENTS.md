@@ -65,8 +65,8 @@ src/main/resources/
 - **Branches:** `feature/<name>` for new features, merge to `main`
 - **Indentation:** 4 spaces
 
-## Known Issues
+## Notes
 
-1. **Portal landing on roof** — `findSafePosition()` searches top-down and lands on the bedrock/stone roof of the dimension instead of inside caverns. Needs to search from cavern floor up, or use the noise settings to pick a known-safe Y level.
-2. **No portal matching** — teleportation picks a position at the same X/Z but doesn't build a return frame or remember paired locations.
-3. **Player-only teleportation** — `onEntityCollision` filters to `ServerPlayerEntity`. Mobs and items pass through.
+- Portal search (`findNearestPortal`) does a 128-block radius brute-force scan. Fine for now but could be expensive if called frequently in loaded chunks. If it becomes a problem, consider a POI-based approach or caching portal locations.
+- The dimension uses `coordinate_scale: 1.0` — no nether-style 8:1 coordinate mapping. Portals map 1:1 between overworld and The Forgotten.
+- `findSafePosition()` searches upward from y=24 through the cavern range. The noise settings create caverns between roughly y=24 and y=160.
