@@ -78,13 +78,15 @@ Uses a nix flake for JBR (JetBrains Runtime) with DCEVM for hot-reload support. 
 
 ```bash
 ./reload.sh              # compile + hot-swap in one step
-# or manually:
+# or manually (inside nix develop):
 ./gradlew classes        # compile only (~3 sec)
-java hotswap.java build/classes/java/main --changed-since 10
+javac -d build/hotswap hotswap.java
+java -cp build/hotswap hotswap build/classes/java/main --changed-since 10
 ```
 
-- **`hotswap.java`** — connects to the debug port and pushes changed `.class` files into the running JVM
-- **`reload.sh`** — convenience wrapper: compile + hot-swap
+- **`hotswap.java`** — connects to JDWP on port 5005 and pushes changed `.class` files into the running JVM
+- **`reload.sh`** — convenience wrapper: wraps compile + hot-swap in `nix develop`
+- **Requires** `./gradlew runClient` to be running (launched from a `nix develop` shell)
 - Works for logic changes, new methods/fields. Mixin changes and new registry entries require a restart.
 
 ## Notes
