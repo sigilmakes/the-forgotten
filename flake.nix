@@ -26,14 +26,14 @@
           pkgs.flite
           pkgs.libpulseaudio
           pkgs.udev
-          pkgs.xorg.libX11
-          pkgs.xorg.libXcursor
-          pkgs.xorg.libXrandr
-          pkgs.xorg.libXi
-          pkgs.xorg.libXxf86vm
-          pkgs.xorg.libXext
-          pkgs.xorg.libXrender
-          pkgs.xorg.libXtst
+          pkgs.libx11
+          pkgs.libxcursor
+          pkgs.libxrandr
+          pkgs.libxi
+          pkgs.libxxf86vm
+          pkgs.libxext
+          pkgs.libxrender
+          pkgs.libxtst
           pkgs.vulkan-loader
         ];
       };
