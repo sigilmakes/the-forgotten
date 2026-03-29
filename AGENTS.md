@@ -70,7 +70,22 @@ src/main/resources/
 
 ## Dev Environment
 
-Uses a nix flake for JDK 21. Run `nix develop` to enter the shell, then `./gradlew build`.
+Uses a nix flake for JBR (JetBrains Runtime) with DCEVM for hot-reload support. Run `nix develop` to enter the shell.
+
+### Hot-Reload Workflow
+
+`runClient` launches Minecraft with a JDWP debug port on 5005 and DCEVM enhanced class redefinition enabled. After editing code:
+
+```bash
+./reload.sh              # compile + hot-swap in one step
+# or manually:
+./gradlew classes        # compile only (~3 sec)
+java hotswap.java build/classes/java/main --changed-since 10
+```
+
+- **`hotswap.java`** — connects to the debug port and pushes changed `.class` files into the running JVM
+- **`reload.sh`** — convenience wrapper: compile + hot-swap
+- Works for logic changes, new methods/fields. Mixin changes and new registry entries require a restart.
 
 ## Notes
 

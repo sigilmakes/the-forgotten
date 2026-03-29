@@ -65,6 +65,14 @@ jar {
 	}
 }
 
+// Hot-reload: JBR DCEVM + JDWP debug port for live class redefinition
+loom {
+	runConfigs.configureEach {
+		vmArg "-XX:+AllowEnhancedClassRedefinition"
+		vmArg "-agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=5005"
+	}
+}
+
 // configure the maven publication
 publishing {
 	publications {
