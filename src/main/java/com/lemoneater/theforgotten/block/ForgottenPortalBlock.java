@@ -199,7 +199,7 @@ public class ForgottenPortalBlock extends Block {
             );
         }
 
-        // Sculk soul particles
+        // Destination-colored particles
         if (random.nextInt(3) == 0) {
             double x = pos.getX() + random.nextDouble();
             double y = pos.getY() + random.nextDouble();
@@ -209,7 +209,13 @@ public class ForgottenPortalBlock extends Block {
             double vy = random.nextDouble() * 0.04 + 0.01;
             double vz = (random.nextDouble() - 0.5) * 0.02;
 
-            world.addParticleClient(ParticleTypes.SCULK_SOUL, x, y, z, vx, vy, vz);
+            PortalDestination destination = state.get(DESTINATION);
+            switch (destination) {
+                case OVERWORLD -> world.addParticleClient(ParticleTypes.HAPPY_VILLAGER, x, y, z, vx, vy, vz);
+                case NETHER -> world.addParticleClient(ParticleTypes.SMALL_FLAME, x, y, z, vx, vy * 0.5, vz);
+                case END -> world.addParticleClient(ParticleTypes.PORTAL, x, y, z, vx, vy, vz);
+                default -> world.addParticleClient(ParticleTypes.SCULK_SOUL, x, y, z, vx, vy, vz);
+            }
         }
 
         // Enchant glyphs
