@@ -53,6 +53,18 @@ public class ModBlocks {
             true
     );
 
+    // -- Pale dirt (natural soil layer) --
+
+    public static final Block PALE_DIRT = register(
+            "pale_dirt",
+            Block::new,
+            AbstractBlock.Settings.create()
+                    .mapColor(MapColor.OFF_WHITE)
+                    .sounds(BlockSoundGroup.GRAVEL)
+                    .strength(0.5f),
+            true
+    );
+
     // -- Portal --
 
     public static final Block FORGOTTEN_PORTAL = register(

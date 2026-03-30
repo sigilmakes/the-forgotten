@@ -1,0 +1,6 @@
+{
+  "parent": "block/cube_all",
+  "textures": {
+    "all": "the-forgotten:block/pale_dirt"
+  }
+}
