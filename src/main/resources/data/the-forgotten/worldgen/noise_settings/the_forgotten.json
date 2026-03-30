@@ -12,7 +12,7 @@
     "height": 384,
     "min_y": -64,
     "size_horizontal": 1,
-    "size_vertical": 1
+    "size_vertical": 2
   },
   "noise_router": {
     "barrier": 0.0,
