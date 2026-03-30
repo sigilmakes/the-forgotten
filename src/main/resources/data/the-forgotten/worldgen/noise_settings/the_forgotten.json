@@ -107,7 +107,7 @@
                                         "type": "minecraft:clamp",
                                         "input": {
                                           "type": "minecraft:add",
-                                          "argument1": 0.1,
+                                          "argument1": 0.0,
                                           "argument2": {
                                             "type": "minecraft:noise",
                                             "noise": "minecraft:cave_cheese",
@@ -145,7 +145,7 @@
                               "argument2": {
                                 "type": "minecraft:range_choice",
                                 "input": "minecraft:overworld/caves/pillars",
-                                "max_exclusive": 0.03,
+                                "max_exclusive": -0.05,
                                 "min_inclusive": -1000000.0,
                                 "when_in_range": -1000000.0,
                                 "when_out_of_range": "minecraft:overworld/caves/pillars"
