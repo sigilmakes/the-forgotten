@@ -170,7 +170,7 @@
               "type": "minecraft:add",
               "argument1": {
                 "type": "minecraft:mul",
-                "argument1": 1.2,
+                "argument1": 0.7,
                 "argument2": {
                   "type": "minecraft:noise",
                   "noise": "minecraft:jagged",
@@ -180,7 +180,7 @@
               },
               "argument2": {
                 "type": "minecraft:add",
-                "argument1": -0.15,
+                "argument1": -0.25,
                 "argument2": {
                   "type": "minecraft:noise",
                   "noise": "minecraft:cave_cheese",
