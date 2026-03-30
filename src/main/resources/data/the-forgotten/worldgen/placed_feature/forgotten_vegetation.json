@@ -13,7 +13,7 @@
       "height": {
         "type": "minecraft:constant",
         "value": {
-          "absolute": 130
+          "absolute": 110
         }
       }
     },
@@ -30,7 +30,7 @@
           "type": "minecraft:solid"
         }
       },
-      "max_steps": 80
+      "max_steps": 32
     },
     {
       "type": "minecraft:biome"
