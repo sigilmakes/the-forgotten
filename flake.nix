@@ -15,6 +15,7 @@
         packages = [
           pkgs.jetbrains.jdk
           pkgs.gradle
+          (pkgs.python3.withPackages (ps: [ ps.pillow ]))
         ];
 
         JAVA_HOME = pkgs.jetbrains.jdk;
