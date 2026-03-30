@@ -12,13 +12,17 @@
     "height": 384,
     "min_y": -64,
     "size_horizontal": 1,
-    "size_vertical": 2
+    "size_vertical": 1
   },
   "noise_router": {
     "barrier": 0.0,
     "continents": "minecraft:overworld/continents",
     "depth": "minecraft:overworld/depth",
-    "erosion": "minecraft:overworld/erosion",
+    "erosion": {
+      "type": "minecraft:add",
+      "argument1": "minecraft:overworld/erosion",
+      "argument2": -0.2
+    },
     "final_density": {
       "type": "minecraft:min",
       "argument1": {
