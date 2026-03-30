@@ -168,8 +168,8 @@ public class ForgottenPortalBlock extends Block {
 
         boolean hasVerticalSupport = isFrameOrPortal(world, pos.up()) || isFrameOrPortal(world, pos.down());
         boolean hasHorizontalSupport = axis == Direction.Axis.X
-                ? isFrameOrPortal(world, pos.north()) || isFrameOrPortal(world, pos.south())
-                : isFrameOrPortal(world, pos.east()) || isFrameOrPortal(world, pos.west());
+                ? isFrameOrPortal(world, pos.east()) || isFrameOrPortal(world, pos.west())
+                : isFrameOrPortal(world, pos.north()) || isFrameOrPortal(world, pos.south());
 
         if (!hasVerticalSupport && !hasHorizontalSupport) {
             world.breakBlock(pos, false);

@@ -44,7 +44,7 @@ public class PortalHelper {
     }
 
     private static Optional<PortalFrame> detectFrame(World world, BlockPos pos, Direction.Axis axis) {
-        Direction widthDir = axis == Direction.Axis.X ? Direction.SOUTH : Direction.EAST;
+        Direction widthDir = axis == Direction.Axis.X ? Direction.EAST : Direction.SOUTH;
 
         // Find the bottom of the interior
         BlockPos bottomPos = pos;
@@ -175,8 +175,8 @@ public class PortalHelper {
         }
 
         Direction[] exits = axis == Direction.Axis.X
-                ? new Direction[]{Direction.EAST, Direction.WEST}
-                : new Direction[]{Direction.NORTH, Direction.SOUTH};
+                ? new Direction[]{Direction.NORTH, Direction.SOUTH}
+                : new Direction[]{Direction.EAST, Direction.WEST};
 
         for (Direction dir : exits) {
             BlockPos candidate = portalPos.offset(dir);
@@ -201,7 +201,7 @@ public class PortalHelper {
      * Build a minimal 2×3 portal frame of reinforced deepslate and fill it with portal blocks.
      */
     public static BlockPos buildPortalFrame(ServerWorld world, BlockPos bottomLeft, Direction.Axis axis, PortalDestination destination) {
-        Direction widthDir = axis == Direction.Axis.X ? Direction.SOUTH : Direction.EAST;
+        Direction widthDir = axis == Direction.Axis.X ? Direction.EAST : Direction.SOUTH;
         int width = 2;
         int height = 3;
 
@@ -248,8 +248,8 @@ public class PortalHelper {
 
         // Ensure a solid platform under the entire frame + exits
         Direction[] exits = axis == Direction.Axis.X
-                ? new Direction[]{Direction.EAST, Direction.WEST}
-                : new Direction[]{Direction.NORTH, Direction.SOUTH};
+                ? new Direction[]{Direction.NORTH, Direction.SOUTH}
+                : new Direction[]{Direction.EAST, Direction.WEST};
 
         // Platform under frame and exit areas
         for (int w = -2; w <= width + 1; w++) {
