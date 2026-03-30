@@ -130,7 +130,11 @@ public class PortalHelper {
      * Only matches portals with the specified destination type.
      */
     public static BlockPos findNearestPortal(ServerWorld world, BlockPos around, PortalDestination destination) {
-        int searchRadius = 128;
+        // Scale search radius by target dimension's coordinate_scale, matching vanilla behavior.
+        // Overworld/End (scale 1.0) → 128 blocks, Nether/Forgotten (scale 8.0) → 16 blocks.
+        // Prevents cross-linking when coordinate scaling compresses distant source portals
+        // into nearby target positions.
+        int searchRadius = Math.max(16, (int) (128 / world.getDimension().coordinateScale()));
         BlockPos nearest = null;
         double nearestDist = Double.MAX_VALUE;
 
