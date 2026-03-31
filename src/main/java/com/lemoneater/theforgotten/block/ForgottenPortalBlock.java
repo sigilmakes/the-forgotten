@@ -95,7 +95,61 @@ public class ForgottenPortalBlock extends Block {
         int x = sourcePos.getX();
         int z = sourcePos.getZ();
 
-        // Search downward from build height for a solid block
+        // For ceiling dimensions (The Forgotten, Nether-style), search BOTTOM-UP.
+        // Top-down finds the roof surface; bottom-up finds the cavern floor.
+        // For open dimensions (Overworld), search TOP-DOWN to find the surface.
+        boolean hasCeiling = !world.getDimension().hasSkyLight();
+
+        if (hasCeiling) {
+            return findSafePositionCavern(world, x, z);
+        } else {
+            return findSafePositionSurface(world, x, z);
+        }
+    }
+
+    /**
+     * Bottom-up search for ceiling dimensions (nether-style caverns).
+     * Finds the first cavern floor: solid block with 2 air blocks above.
+     */
+    private BlockPos findSafePositionCavern(ServerWorld world, int x, int z) {
+        for (int y = world.getBottomY(); y <= world.getTopYInclusive() - 2; y++) {
+            BlockPos checkPos = new BlockPos(x, y, z);
+            BlockPos abovePos = checkPos.up();
+            BlockPos above2Pos = checkPos.up(2);
+
+            if (!world.getBlockState(checkPos).isAir()
+                    && world.getBlockState(abovePos).isAir()
+                    && world.getBlockState(above2Pos).isAir()) {
+                return abovePos;
+            }
+        }
+
+        // No cavern found — search a small area around the target for any opening
+        for (int radius = 1; radius <= 8; radius++) {
+            for (int dx = -radius; dx <= radius; dx++) {
+                for (int dz = -radius; dz <= radius; dz++) {
+                    if (Math.abs(dx) != radius && Math.abs(dz) != radius) continue; // only check perimeter
+                    for (int y = world.getBottomY(); y <= world.getTopYInclusive() - 2; y++) {
+                        BlockPos checkPos = new BlockPos(x + dx, y, z + dz);
+                        if (!world.getBlockState(checkPos).isAir()
+                                && world.getBlockState(checkPos.up()).isAir()
+                                && world.getBlockState(checkPos.up(2)).isAir()) {
+                            return checkPos.up();
+                        }
+                    }
+                }
+            }
+        }
+
+        // Absolute fallback — carve a small room at Y=32
+        return createPlatform(world, x, 32, z);
+    }
+
+    /**
+     * Top-down search for open dimensions (overworld-style).
+     * Finds the surface: first solid block from the top with 2 air blocks above.
+     */
+    private BlockPos findSafePositionSurface(ServerWorld world, int x, int z) {
         for (int y = world.getTopYInclusive(); y >= world.getBottomY(); y--) {
             BlockPos checkPos = new BlockPos(x, y, z);
             BlockPos abovePos = checkPos.up();
@@ -108,11 +162,21 @@ public class ForgottenPortalBlock extends Block {
             }
         }
 
-        // No safe spot found — create a small palestone platform
-        BlockPos platformPos = new BlockPos(x, 64, z);
+        // No safe spot found — create a small platform at sea level
+        return createPlatform(world, x, 64, z);
+    }
+
+    /**
+     * Emergency fallback: create a 3x3 palestone platform and clear space above.
+     */
+    private BlockPos createPlatform(ServerWorld world, int x, int y, int z) {
+        BlockPos platformPos = new BlockPos(x, y, z);
         for (int dx = -1; dx <= 1; dx++) {
             for (int dz = -1; dz <= 1; dz++) {
                 world.setBlockState(platformPos.add(dx, 0, dz), ModBlocks.PALESTONE.getDefaultState());
+                // Clear 2 blocks above for headroom
+                world.setBlockState(platformPos.add(dx, 1, dz), net.minecraft.block.Blocks.AIR.getDefaultState());
+                world.setBlockState(platformPos.add(dx, 2, dz), net.minecraft.block.Blocks.AIR.getDefaultState());
             }
         }
         return platformPos.up();
