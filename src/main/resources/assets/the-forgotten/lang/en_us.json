@@ -3,5 +3,16 @@
   "block.the-forgotten.polished_palestone": "Polished Palestone",
   "block.the-forgotten.palestone_bricks": "Palestone Bricks",
   "block.the-forgotten.pale_dirt": "Pale Dirt",
-  "block.the-forgotten.forgotten_portal": "Forgotten Portal"
+  "block.the-forgotten.forgotten_portal": "Forgotten Portal",
+
+  "advancement.the-forgotten.root.title": "The Forgotten",
+  "advancement.the-forgotten.root.description": "Enter the dimension between dimensions",
+  "advancement.the-forgotten.return.title": "Return to Sender",
+  "advancement.the-forgotten.return.description": "Find your way back to the Overworld",
+  "advancement.the-forgotten.hellgate.title": "Hellgate",
+  "advancement.the-forgotten.hellgate.description": "Open a path to the Nether from The Forgotten",
+  "advancement.the-forgotten.end_of_the_line.title": "End of the Line",
+  "advancement.the-forgotten.end_of_the_line.description": "Open a path to the End from The Forgotten",
+  "advancement.the-forgotten.hub.title": "Interdimensional Hub",
+  "advancement.the-forgotten.hub.description": "Use The Forgotten to reach every other dimension"
 }

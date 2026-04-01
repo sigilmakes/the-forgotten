@@ -1,0 +1,45 @@
+{
+  "parent": "the-forgotten:root",
+  "display": {
+    "icon": {
+      "id": "minecraft:recovery_compass"
+    },
+    "title": {
+      "translate": "advancement.the-forgotten.hub.title"
+    },
+    "description": {
+      "translate": "advancement.the-forgotten.hub.description"
+    },
+    "frame": "challenge",
+    "show_toast": true,
+    "announce_to_chat": true
+  },
+  "criteria": {
+    "to_overworld": {
+      "trigger": "minecraft:changed_dimension",
+      "conditions": {
+        "from": "the-forgotten:the_forgotten",
+        "to": "minecraft:overworld"
+      }
+    },
+    "to_nether": {
+      "trigger": "minecraft:changed_dimension",
+      "conditions": {
+        "from": "the-forgotten:the_forgotten",
+        "to": "minecraft:the_nether"
+      }
+    },
+    "to_end": {
+      "trigger": "minecraft:changed_dimension",
+      "conditions": {
+        "from": "the-forgotten:the_forgotten",
+        "to": "minecraft:the_end"
+      }
+    }
+  },
+  "requirements": [
+    ["to_overworld"],
+    ["to_nether"],
+    ["to_end"]
+  ]
+}
