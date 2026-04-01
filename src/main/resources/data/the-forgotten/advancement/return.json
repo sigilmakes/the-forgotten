@@ -1,0 +1,26 @@
+{
+  "parent": "the-forgotten:root",
+  "display": {
+    "icon": {
+      "id": "minecraft:echo_shard"
+    },
+    "title": {
+      "translate": "advancement.the-forgotten.return.title"
+    },
+    "description": {
+      "translate": "advancement.the-forgotten.return.description"
+    },
+    "frame": "task",
+    "show_toast": true,
+    "announce_to_chat": true
+  },
+  "criteria": {
+    "returned_overworld": {
+      "trigger": "minecraft:changed_dimension",
+      "conditions": {
+        "from": "the-forgotten:the_forgotten",
+        "to": "minecraft:overworld"
+      }
+    }
+  }
+}

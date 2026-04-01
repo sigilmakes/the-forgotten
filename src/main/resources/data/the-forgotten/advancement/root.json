@@ -1,0 +1,25 @@
+{
+  "display": {
+    "icon": {
+      "id": "minecraft:echo_shard"
+    },
+    "title": {
+      "translate": "advancement.the-forgotten.root.title"
+    },
+    "description": {
+      "translate": "advancement.the-forgotten.root.description"
+    },
+    "background": "minecraft:textures/block/deepslate.png",
+    "frame": "task",
+    "show_toast": true,
+    "announce_to_chat": true
+  },
+  "criteria": {
+    "entered_forgotten": {
+      "trigger": "minecraft:changed_dimension",
+      "conditions": {
+        "to": "the-forgotten:the_forgotten"
+      }
+    }
+  }
+}
